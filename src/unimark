@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# unimark: Browser independent bookmarking tool
+#
+# Dependencies: dmenu, xdo, xsel, xwininfo, grep, find & sleep
+
+#===============================================================================
+#                             Config
+#===============================================================================
+
+BOOKMARKS_PATH=/mnt/horcrux/git/own/magpie-private/.local/share/bookmarks
+BROWSER_WINDOW_CLASS=brave-browser
+DMENU=dmenu
+
+#===============================================================================
+#                             Script
+#===============================================================================
+
+get_window_name() {
+   NAME=$(xwininfo -root -children | grep "$BROWSER_WINDOW_CLASS")
+   NAME=${NAME#*\"}
+   echo "${NAME%%\"*}"
+}
+
+get_url() {
+   xdo key_press -k 37
+   xdo key_press -k 46
+   sleep 0.3
+   xdo key_release -k 46
+   xdo key_release -k 37
+
+   xdo key_press -k 37
+   xdo key_press -k 54
+   sleep 0.5
+   xdo key_release -k 54
+   xdo key_release -k 37
+
+   xdo key_press -k 8
+   sleep 0.5
+   xdo key_release -k 8
+
+   xsel -p -o
+}
+
+if LOCATION=$(find $BOOKMARKS_PATH -type d | awk -F / '{print $NF}' | $DMENU) &&
+   TITLE=$(: | $DMENU); then
+   [ -z "$TITLE" ] && TITLE=$(get_window_name)
+   LINK=$(get_url)
+   echo "$LINK" > "$(find $BOOKMARKS_PATH -type d -name "$LOCATION")"/"$TITLE".url
+fi
