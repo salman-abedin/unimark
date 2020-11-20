@@ -2,49 +2,38 @@
 #
 # unimark: Browser independent bookmarking tool
 #
-# Dependencies: dmenu, xdo, xsel, xwininfo, grep, find & sleep
+# Dependencies: dmenu/rofi, xdotool, xsel/xclip, curl, grep, & find
 
 #===============================================================================
 #                             Config
 #===============================================================================
 
-BOOKMARKS_PATH=/mnt/horcrux/git/own/magpie-private/.local/share/bookmarks
-BROWSER_WINDOW_CLASS=brave-browser
+BOOKMARKS_PATH=$GIT/own/magpie-private/.local/share/bookmarks
 DMENU=dmenu
 
 #===============================================================================
 #                             Script
 #===============================================================================
 
-get_window_name() {
-   NAME=$(xwininfo -root -children | grep "$BROWSER_WINDOW_CLASS")
-   NAME=${NAME#*\"}
-   echo "${NAME%%\"*}"
-}
+get_title() { curl -s "$1" | grep -iPo '(?<=<title>)(.*)(?=</title>)'; }
 
 get_url() {
-   xdo key_press -k 37
-   xdo key_press -k 46
+   if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
+      xdotool sleep 0.3 key y p
+   else
+      xdotool key F6
+      xdotool sleep 0.3 key Control+c
+      xdotool key F6
+      xdotool getactivewindow getwindowname | grep "Brave" > /dev/null &&
+         xdotool key F6
+   fi
    sleep 0.3
-   xdo key_release -k 46
-   xdo key_release -k 37
-
-   xdo key_press -k 37
-   xdo key_press -k 54
-   sleep 0.5
-   xdo key_release -k 54
-   xdo key_release -k 37
-
-   xdo key_press -k 8
-   sleep 0.5
-   xdo key_release -k 8
-
-   xsel -p -o
+   xsel -b -o || xclip -se c -o
 }
 
 if LOCATION=$(find $BOOKMARKS_PATH -type d | awk -F / '{print $NF}' | $DMENU) &&
-   TITLE=$(: | $DMENU); then
-   [ -z "$TITLE" ] && TITLE=$(get_window_name)
-   LINK=$(get_url)
-   echo "$LINK" > "$(find $BOOKMARKS_PATH -type d -name "$LOCATION")"/"$TITLE".url
+   TITLE=$(: | $DMENU -p "Title"); then
+   URL=$(get_url)
+   [ -z "$TITLE" ] && TITLE=$(get_title "$URL")
+   echo "$URL" > "$(find $BOOKMARKS_PATH -type d -name "$LOCATION")"/"$TITLE".url
 fi
