@@ -1,15 +1,14 @@
 .POSIX:
 BIN_DIR = /usr/local/bin
-install:
+SCRIPT = unimark
+init:
 	@mkdir -p $(BIN_DIR)
-	@for script in src/*; do \
-		cp -f $$script $(BIN_DIR); \
-		chmod 755 $(BIN_DIR)/$${script#src/}; \
-		done
-	@echo Done installing the executable files.
+	@chmod 755 $(SCRIPT)
+	@echo Initiation finished.
+install: init
+	@cp -f $(SCRIPT) $(BIN_DIR)
+	@echo Installation finished.
 uninstall:
-	@for script in src/*;do \
-		rm -f $(BIN_DIR)/$${script#src/}; \
-		done
-	@echo Done removing executable files.
-.PHONY: install uninstall
+	@rm -f $(BIN_DIR)/$(SCRIPT)
+	@echo Uninstallation finished.
+.PHONY: init install uninstall

@@ -2,14 +2,14 @@
 #
 # unimark: Browser independent bookmarking tool
 #
-# Dependencies: dmenu/rofi, xdotool, xsel/xclip, curl, grep, & find
+# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, curl, grep, & find
 
 #===============================================================================
 #                             Config
 #===============================================================================
 
 BOOKMARKS_PATH=$GIT/own/magpie-private/.local/share/bookmarks
-DMENU=dmenu
+DMENU=amenu
 
 #===============================================================================
 #                             Script

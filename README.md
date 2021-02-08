@@ -2,7 +2,7 @@
 
 # Dependencies
 
--  dmenu/rofi
+-  amenu/dmenu/rofi
 -  xdotool
 -  xsel/xclip
 -  curl, grep, & find
@@ -12,6 +12,18 @@
 - Qutebrowser
 - Brave
 - Firefox
+
+## Installation
+
+```sh
+git clone https://github.com/salman-abedin/unimark.git && cd unimark && sudo make install
+```
+
+## Uninstallation
+
+```sh
+sudo make uninstall
+```
 
 ## Documentation
 
