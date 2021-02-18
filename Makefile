@@ -1,14 +1,20 @@
 .POSIX:
-BIN_DIR = /usr/local/bin
-SCRIPT = unimark
+DIR_BIN = /usr/local/bin
+SCRIPTS = $(shell grep -lr "^#\!" ./* | sed 's/.\///')
+CONFIG = $(shell find $$PWD -type f -name "*rc")
 init:
-	@mkdir -p $(BIN_DIR)
-	@chmod 755 $(SCRIPT)
+	@[ $(CONFIG) ] && { \
+		[ -f ~/.config/$(CONFIG) ] || cp $(CONFIG) ~/.config; \
+	} || exit 0
 	@echo Initiation finished.
-install: init
-	@cp -f $(SCRIPT) $(BIN_DIR)
+install:
+	@mkdir -p $(DIR_BIN)
+	@for script in $(SCRIPTS); do \
+		cp -f $$script $(DIR_BIN); \
+		chmod 755 $(DIR_BIN)/$${script##*/}; \
+		done
 	@echo Installation finished.
 uninstall:
-	@rm -f $(BIN_DIR)/$(SCRIPT)
+	@for script in $(SCRIPTS); do rm -f $(DIR_BIN)/$${script##*/}; done
 	@echo Uninstallation finished.
 .PHONY: init install uninstall
