@@ -2,7 +2,7 @@
 #
 # unimark: Browser independent bookmarking tool
 #
-# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, curl, grep, & find
+# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, curl, tr, grep, & find
 
 #===============================================================================
 #                             Config
@@ -15,8 +15,11 @@ DMENU=amenu
 #                             Script
 #===============================================================================
 
-get_title() { curl -s "$1" | grep -iPo '(?<=<title>)(.*)(?=</title>)'; }
-
+get_title() {
+   curl -Ls "$1" |
+      tr -d '\n' |
+      grep -iPo '(?<=<title>)(.*)(?=</title>)'
+}
 get_url() {
    if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
       xdotool sleep 0.3 key y p
@@ -35,5 +38,5 @@ if LOCATION=$(find $BOOKMARKS_PATH -type d | awk -F / '{print $NF}' | $DMENU) &&
    TITLE=$(: | $DMENU -p "Title"); then
    URL=$(get_url)
    [ -z "$TITLE" ] && TITLE=$(get_title "$URL")
-   echo "$URL" > "$(find $BOOKMARKS_PATH -type d -name "$LOCATION")"/"$TITLE".url
+   # echo "$URL" > "$(find $BOOKMARKS_PATH -type d -name "$LOCATION")"/"$TITLE".url
 fi
