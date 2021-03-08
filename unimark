@@ -2,7 +2,7 @@
 #
 # unimark: Browser independent bookmarking tool
 #
-# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, grep, & find
+# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, grep & find
 
 #===============================================================================
 #                             Config
@@ -15,21 +15,15 @@ DMENU=amenu
 #                             Script
 #===============================================================================
 
-LOCATION=
-TITLE=
-URL=
-
 bookmark() {
-   echo "$URL" > "$(find $BOOKMARKS_PATH -type d -name \
-      "$LOCATION")"/"$(echo "$TITLE" | sed 's/\///g')".url
+   echo "$1" > "$(find $4 -type d -name \
+      "$3")"/"$(echo "$2" | sed 's/\///g')".url
 }
 get_title() {
-   TITLE=$(
-      # curl -Ls "$1" |
-      #    tr -d '\n' |
-      #    grep -iPo '(?<=<title>)(.*)(?=</title>)'
-      xdotool getactivewindow getwindowname
-   )
+   # curl -Ls "$1" |
+   #    tr -d '\n' |
+   #    grep -iPo '(?<=<title>)(.*)(?=</title>)'
+   xdotool getactivewindow getwindowname
 }
 get_url() {
    if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
@@ -42,17 +36,17 @@ get_url() {
          xdotool key F6
    fi
    sleep 0.3
-   URL=$(xsel -b -o || xclip -se c -o)
+   xsel -b -o || xclip -se c -o
 }
-prompt_title() { TITLE=$(: | $DMENU -p "Title"); }
-prompt_location() {
-   LOCATION=$(find $BOOKMARKS_PATH -type d | awk -F / '{print $NF}' | $DMENU)
-}
+prompt_title() { : | $DMENU -p "Title"; }
+prompt_location() { find $1 -type d | awk -F / '{print $NF}' | $DMENU; }
+
 main() {
-   if prompt_location && prompt_title; then
-      get_url
-      [ -z "$TITLE" ] && get_title
-      bookmark
+   if LOCATION=$(prompt_location "$BOOKMARKS_PATH") &&
+      TITLE=$(prompt_title); then
+      URL=$(get_url)
+      [ -z "$TITLE" ] && TITLE=$(get_title)
+      bookmark "$URL" "${TITLE% — *}" "$LOCATION" $BOOKMARKS_PATH
    fi
 }
 main
