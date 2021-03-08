@@ -2,7 +2,7 @@
 #
 # unimark: Browser independent bookmarking tool
 #
-# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, curl, tr, grep, & find
+# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, grep, & find
 
 #===============================================================================
 #                             Config
@@ -20,13 +20,15 @@ TITLE=
 URL=
 
 bookmark() {
-   echo "$URL" > "$(find $BOOKMARKS_PATH -type d -name "$LOCATION")"/$TITLE.url
+   echo "$URL" > "$(find $BOOKMARKS_PATH -type d -name \
+      "$LOCATION")"/"$(echo "$TITLE" | sed 's/\///g')".url
 }
 get_title() {
    TITLE=$(
-      curl -Ls "$1" |
-         tr -d '\n' |
-         grep -iPo '(?<=<title>)(.*)(?=</title>)'
+      # curl -Ls "$1" |
+      #    tr -d '\n' |
+      #    grep -iPo '(?<=<title>)(.*)(?=</title>)'
+      xdotool getactivewindow getwindowname
    )
 }
 get_url() {
@@ -49,7 +51,7 @@ prompt_location() {
 main() {
    if prompt_location && prompt_title; then
       get_url
-      [ -z "$TITLE" ] && get_title "$URL"
+      [ -z "$TITLE" ] && get_title
       bookmark
    fi
 }

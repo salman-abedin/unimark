@@ -5,7 +5,7 @@
 -  amenu/dmenu/rofi
 -  xdotool
 -  xsel/xclip
--  curl, grep, tr & find
+-  grep & find
 
 # Supported Browsers
 
