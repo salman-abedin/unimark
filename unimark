@@ -8,8 +8,9 @@
 #                             Config
 #===============================================================================
 
-BOOKMARKS_PATH=$GIT/own/magpie-private/.local/share/bookmarks
-DMENU=amenu
+BOOKMARKS_PATH=~/.local/share/bookmarks
+DMENU=dmenu
+# DMENU=amenu
 
 #===============================================================================
 #                             Script
@@ -20,10 +21,11 @@ bookmark() {
       "$3")"/"$(echo "$2" | sed 's/\///g')".url
 }
 get_title() {
-   # curl -Ls "$1" |
-   #    tr -d '\n' |
-   #    grep -iPo '(?<=<title>)(.*)(?=</title>)'
-   xdotool getactivewindow getwindowname
+   NAME=$(xdotool getactivewindow getwindowname)
+   NAME=${NAME% - *} # qutebrowser crap
+   NAME=${NAME% — *} # firefox crap
+   NAME=${NAME#*) }  # youtube crap
+   echo "$NAME"
 }
 get_url() {
    if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
@@ -32,8 +34,8 @@ get_url() {
       xdotool key F6
       xdotool sleep 0.3 key Control+c
       xdotool key F6
-      xdotool getactivewindow getwindowname | grep "Brave" > /dev/null &&
-         xdotool key F6
+      xdotool getactivewindow getwindowname | grep "Brave" > /dev/null \
+         && xdotool key F6
    fi
    sleep 0.3
    xsel -b -o || xclip -se c -o
@@ -42,11 +44,11 @@ prompt_title() { : | $DMENU -p "Title"; }
 prompt_location() { find $1 -type d | awk -F / '{print $NF}' | $DMENU; }
 
 main() {
-   if LOCATION=$(prompt_location "$BOOKMARKS_PATH") &&
-      TITLE=$(prompt_title); then
+   if LOCATION=$(prompt_location "$BOOKMARKS_PATH") \
+      && TITLE=$(prompt_title); then
       URL=$(get_url)
       [ -z "$TITLE" ] && TITLE=$(get_title)
-      bookmark "$URL" "${TITLE% — *}" "$LOCATION" $BOOKMARKS_PATH
+      bookmark "$URL" "$TITLE" "$LOCATION" $BOOKMARKS_PATH
    fi
 }
 main
