@@ -9,8 +9,7 @@
 #===============================================================================
 
 BOOKMARKS_PATH=/mnt/internal/git/system/magpie-private/.local/share/bookmarks
-DMENU=dmenu
-# DMENU=amenu
+DMENU=amenu
 
 #===============================================================================
 #                             Script
