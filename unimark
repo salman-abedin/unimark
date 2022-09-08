@@ -2,52 +2,45 @@
 #
 # unimark: Browser independent bookmarking tool
 #
+# Environment Variable: UNIMARK_SOURCE
+#
 # Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, grep & find
 
-#===============================================================================
-#                             Config
-#===============================================================================
-
-BOOKMARKS_PATH=/mnt/internal/git/system/magpie-private/.local/share/bookmarks
-DMENU=amenu
-
-#===============================================================================
-#                             Script
-#===============================================================================
+UNIMARK_SOURCE=/mnt/internal/git/system/magpie-personal/.local/share/bookmarks
 
 bookmark() {
-  echo "$1" > "$(find $4 -type d -name \
-    "$3")"/"$(echo "$2" | sed 's/\///g')".url
+    echo "$1" > "$(find $4 -type d -name \
+        "$3")"/"$(echo "$2" | sed 's/\///g')".url
 }
 get_title() {
-  NAME=$(xdotool getactivewindow getwindowname)
-  NAME=${NAME% - *} # qutebrowser crap
-  NAME=${NAME% — *} # firefox crap
-  NAME=${NAME#*) }  # youtube crap
-  echo "$NAME"
+    name=$(xdotool getactivewindow getwindowname)
+    name=${name% - *} # qutebrowser crap
+    name=${name% — *} # firefox crap
+    name=${name#*) }  # youtube crap
+    echo "$name"
 }
 get_url() {
-  if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
-    xdotool sleep 0.3 key y p
-  else
-    xdotool key F6
-    xdotool sleep 0.3 key Control+c
-    xdotool key F6
-    xdotool getactivewindow getwindowname | grep "Brave" > /dev/null \
-      && xdotool key F6
-  fi
-  sleep 0.3
-  xsel -b -o || xclip -se c -o
+    if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
+        xdotool sleep 0.3 key y p
+    else
+        xdotool key F6
+        xdotool sleep 0.3 key Control+c
+        xdotool key F6
+        xdotool getactivewindow getwindowname | grep "Brave" > /dev/null \
+            && xdotool key F6
+    fi
+    sleep 0.3
+    xsel -b -o || xclip -se c -o
 }
 prompt_title() { : | $DMENU -p "Title"; }
 prompt_location() { find $1 -type d | awk -F / '{print $NF}' | $DMENU; }
 
 main() {
-  if LOCATION=$(prompt_location "$BOOKMARKS_PATH") \
-    && TITLE=$(prompt_title); then
-    URL=$(get_url)
-    [ -z "$TITLE" ] && TITLE=$(get_title)
-    bookmark "$URL" "$TITLE" "$LOCATION" $BOOKMARKS_PATH
-  fi
+    if location=$(prompt_location "$UNIMARK_SOURCE") \
+        && title=$(prompt_title); then
+        url=$(get_url)
+        [ -z "$title" ] && title=$(get_title)
+        bookmark "$url" "$title" "$location" $UNIMARK_SOURCE
+    fi
 }
 main
