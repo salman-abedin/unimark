@@ -4,14 +4,9 @@
 #
 # Environment Variable: UNIMARK_SOURCE
 #
-# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip, grep & find
+# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip
+#               grep, awk, sed, tr, sort, xargs & uniq
 
-UNIMARK_SOURCE=/mnt/internal/git/system/magpie-personal/.local/share/bookmarks
-
-bookmark() {
-    echo "$1" > "$(find $4 -type d -name \
-        "$3")"/"$(echo "$2" | sed 's/\///g')".url
-}
 get_title() {
     name=$(xdotool getactivewindow getwindowname)
     name=${name% - *} # qutebrowser crap
@@ -19,28 +14,95 @@ get_title() {
     name=${name#*) }  # youtube crap
     echo "$name"
 }
+
 get_url() {
-    if xdotool getactivewindow getwindowname | grep "qutebrowser" > /dev/null; then
+    if xdotool getactivewindow getwindowname | grep "qutebrowser" >/dev/null; then
         xdotool sleep 0.3 key y p
     else
-        xdotool key F6
+        # xdotool key F6
+        xdotool key Control+l
         xdotool sleep 0.3 key Control+c
         xdotool key F6
-        xdotool getactivewindow getwindowname | grep "Brave" > /dev/null \
-            && xdotool key F6
+        xdotool getactivewindow getwindowname | grep "Brave" >/dev/null &&
+            xdotool key F6
     fi
     sleep 0.3
     xsel -b -o || xclip -se c -o
 }
-prompt_title() { : | $DMENU -p "Title"; }
-prompt_location() { find $1 -type d | awk -F / '{print $NF}' | $DMENU; }
+
+prompt_original_title() { : | $DMENU -p "Title"; }
+prompt_existing_title() {
+    grep -P "${1}($|,)" $UNIMARK_SOURCE |
+        awk -F'❚' '{print $1}' |
+        $DMENU -p "Tag: $1"
+}
+prompt_tags() {
+    awk -F'❚' '{print $3}' $UNIMARK_SOURCE |
+        tr , '\n' |
+        sort |
+        uniq |
+        $DMENU -p "Tags(Comma Seperated)"
+}
+launch_tab() {
+    grep "${1}.*${2}" $UNIMARK_SOURCE |
+        awk -F'❚' '{print $2}' |
+        xargs -I% brave %
+}
 
 main() {
-    if location=$(prompt_location "$UNIMARK_SOURCE") \
-        && title=$(prompt_title); then
-        url=$(get_url)
+    case $1 in
+
+    a*)
+        title=$(prompt_original_title)
+        tags=$(prompt_tags)
         [ -z "$title" ] && title=$(get_title)
-        bookmark "$url" "$title" "$location" $UNIMARK_SOURCE
-    fi
+        [ -z "$tags" ] && tags=unsorted
+        url=$(get_url)
+        [ -z "$url" ] && return
+        echo "${title}❚${url}❚${tags}" >>$UNIMARK_SOURCE
+        ;;
+
+    b*)
+        tag=$(prompt_tags)
+        [ -z "$tag" ] && return
+        title=$(prompt_existing_title "$tag")
+        [ -z "$title" ] && return
+        launch_tab "$title" "$tag"
+        ;;
+
+    esac
 }
-main
+main "$1"
+
+# ╔═══════════════════════════════════════════════════════════════════════════════
+# ║                               Exp
+# ╚═══════════════════════════════════════════════════════════════════════════════
+# prompt_location() { find $1 -type d | awk -F / '{print $NF}' | $DMENU; }
+# bookmark() {
+#     echo "$1" >"$(find $4 -type d -name \
+#         "$3")"/"$(echo "$2" | sed 's/\///g')".url
+# }
+
+# a*)
+#     if location=$(prompt_location "$UNIMARK_SOURCE") &&
+#         title=$(prompt_title); then
+#         url=$(get_url)
+#         [ -z "$title" ] && title=$(get_title)
+#         bookmark "$url" "$title" "$location" $UNIMARK_SOURCE
+#     fi
+#     ;;
+
+# b*)
+#     link=$(
+#         find $UNIMARK_SOURCE -type f |
+#             sed 's/.*\///' |
+#             nl |
+#             $DMENU
+#     )
+#     [ -z "$link" ] && return
+#     link_number=$(echo "$link" | awk '{print $1}')
+#     find $UNIMARK_SOURCE -type f |
+#         sed "${link_number}!d" |
+#         xargs -I% cat % |
+#         xargs -I% brave %
+#     ;;
