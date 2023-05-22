@@ -3,9 +3,9 @@
 # Dependencies
 
 -  amenu/dmenu/rofi
--  xdotool
--  xsel/xclip
--  grep & find
+-  ydotool
+-  wl-clipboard/xsel/xclip
+-  grep, awk, sed, tr, sort, uniq, sleep & xargs
 
 # Supported Browsers
 

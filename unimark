@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# unimark: Browser independent bookmarking tool
+# unimark: Browser independent bookmarking utility
 #
-# Environment Variable: UNIMARK_SOURCE
+# Environment Variable: DMENU, UNIMARK_SOURCE
 #
-# Dependencies: amenu/dmenu/rofi, xdotool, xsel/xclip
-#               grep, awk, sed, tr, sort, xargs & uniq
+# Dependencies: amenu/dmenu/rofi, ydotool, wl-clipboard/xsel/xclip
+#               grep, awk, sed, tr, sort, uniq, sleep and xargs
 
 get_title() {
     name=$(xdotool getactivewindow getwindowname)
@@ -19,15 +19,11 @@ get_url() {
     if xdotool getactivewindow getwindowname | grep "qutebrowser" >/dev/null; then
         xdotool sleep 0.3 key y p
     else
-        # xdotool key F6
-        xdotool key Control+l
-        xdotool sleep 0.3 key Control+c
-        xdotool key F6
-        xdotool getactivewindow getwindowname | grep "Brave" >/dev/null &&
-            xdotool key F6
+        ydotool key 29:1 38:1 29:0 38:0
+        ydotool key 29:1 46:1 29:0 46:0
+        ydotool key 1:1 1:0
     fi
-    sleep 0.3
-    xsel -b -o || xclip -se c -o
+    wl-paste || xsel -b -o || xclip -se c -o
 }
 
 prompt_original_title() { : | $DMENU -p "Title"; }
@@ -46,10 +42,11 @@ prompt_tags() {
 launch_tab() {
     grep "${1}.*${2}" $UNIMARK_SOURCE |
         awk -F'❚' '{print $2}' |
-        xargs -I% brave %
+        xargs -I% "$BROWSER" %
 }
 
 main() {
+
     case $1 in
 
     a*)
@@ -71,6 +68,7 @@ main() {
         ;;
 
     esac
+
 }
 main "$1"
 
