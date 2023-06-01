@@ -40,7 +40,7 @@ prompt_tags() {
         $DMENU -p "Tags(Comma Seperated)"
 }
 launch_tab() {
-    grep "${1}.*${2}" $UNIMARK_SOURCE |
+    grep "^${1}.*${2}" $UNIMARK_SOURCE |
         awk -F'❚' '{print $2}' |
         xargs -I% "$BROWSER" %
 }
