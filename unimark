@@ -8,21 +8,18 @@
 #               grep, awk, sed, tr, sort, uniq, sleep and xargs
 
 get_title() {
-    name=$(xdotool getactivewindow getwindowname)
-    name=${name% - *} # qutebrowser crap
-    name=${name% — *} # firefox crap
-    name=${name#*) }  # youtube crap
-    echo "$name"
+    # name=$(xdotool getactivewindow getwindowname)
+    # name=${name% - *} # qutebrowser crap
+    # name=${name% — *} # firefox crap
+    # name=${name#*) }  # youtube crap
+    # echo "$name"
+    hyprctl activewindow | grep -Po "(?<=title: ).*"
 }
 
 get_url() {
-    if xdotool getactivewindow getwindowname | grep "qutebrowser" >/dev/null; then
-        xdotool sleep 0.3 key y p
-    else
-        ydotool key 29:1 38:1 29:0 38:0
-        ydotool key 29:1 46:1 29:0 46:0
-        ydotool key 1:1 1:0
-    fi
+    ydotool key 29:1 38:1 29:0 38:0
+    ydotool key 29:1 46:1 29:0 46:0
+    ydotool key 1:1 1:0
     wl-paste || xsel -b -o || xclip -se c -o
 }
 
